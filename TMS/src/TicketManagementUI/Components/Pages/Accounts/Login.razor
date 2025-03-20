@@ -1,0 +1,102 @@
+﻿@page "/login"
+
+@layout EmptyLayout
+
+@using System.ComponentModel.DataAnnotations
+@using Domain.Entities
+@using Domain.Interfaces
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.JSInterop
+
+@inject NavigationManager Nav
+@inject IAccountService AccountService
+@inject IJSRuntime JSRuntime
+@inject SignInManager<User> SignInManager
+
+@* @rendermode InteractiveServer *@
+
+<section class="vh-50">
+    <div class="container-fluid h-custom">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-md-9 col-lg-6 col-xl-5">
+                <MudImage src="/assests/imgs/login-img.jpg" class="img-fluid" alt="Sample image" />
+            </div>
+            <div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
+                <div class="d-flex flex-row align-items-center justify-content-center justify-content-lg-start">
+                    <p class="lead fw-normal mb-0 me-3">Sign in with Email</p>
+                </div>
+                <StatusMessage Message="@errorMessage" Error="true" />
+                <EditForm Model="Input" method="post" OnvalidSubmit="OnLogin" FormName="Login">
+                    <DataAnnotationsValidator />
+                    <hr />
+                    <div class="form-floating mb-3">
+                        <InputText class="form-control" aria-required="true" @bind-Value="Input.Email" />
+                        <label for="email" class="form-label">Email</label>
+                        <ValidationMessage For="() => Input.Email" class="text-danger" />
+                    </div>
+                    <div class="form-floating mb-3">
+                        <InputText type="password" class="form-control" aria-required="true" @bind-Value="Input.Password"/>
+                        <label for="password" class="form-label">Password</label>
+                        <ValidationMessage For="() => Input.Password" class="text-danger" />
+                    </div>
+                    <div class="form-floating mb-3">
+                        <InputCheckbox @bind-Value="Input.Remember"/>
+                        Remember me
+                    </div>
+                    <div>
+                        <button type="submit" class="w-100 btn btn-lg btn-primary">Login</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+    private string? errorMessage;
+
+    // private Alert alert;
+
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     await AccountService.RegisterUserAsync(new Domain.DTO.Requests.RegisterUserRequest
+    //     {
+    //         Email = "admin@edged.com",
+    //         Role = "Admin"
+    //     });
+    // }
+
+    private async Task OnLogin()
+    {
+
+        var verify = await AccountService.VerifyUserAsync(Input.Email, Input.Password);
+        if(!verify.Succeeded)
+        {
+            ///Alert
+            // alert.ShowFailedAlert(verify.ErrorMessage);
+            errorMessage = "Error: User does not exist.";
+            return;
+        }
+
+        await SignInManager.PasswordSignInAsync(verify.Data!, Input.Password, Input.Remember, true);
+        Nav.NavigateTo("/");
+
+        //Nav.NavigateTo($"/processor/{verify.Data}/{Input.Password}/{Input.Remember}");
+    }
+
+    private sealed class InputModel
+    {
+        [EmailAddress(ErrorMessage ="Invalid email address format")]
+        [Required(ErrorMessage = "User name cannot be empty")]
+        [StringLength(100, ErrorMessage = "Name length can't be more than 100.")]
+        public string Email { get; set; } = string.Empty;
+
+        [DataType(DataType.Password)]
+        [Required(ErrorMessage = "Password cannot be empty")]
+        [StringLength(30, ErrorMessage = "Password must be at least 6 characters long.", MinimumLength = 6)]
+        public string Password { get; set; } = string.Empty;
+        public bool Remember { get; set; }
+    }
+}

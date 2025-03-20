@@ -1,0 +1,22 @@
+﻿@page "/processor/{username}/{password}/{rememberme:bool}"
+
+@using Domain.Entities
+@using Microsoft.AspNetCore.Identity
+
+@layout EmptyLayout
+
+@inject SignInManager<User> SignInManager
+@inject NavigationManager Nav
+Sign In...
+
+@code {
+    [Parameter] public string username { get; set; }
+    [Parameter] public string password { get; set; }
+    [Parameter] public bool rememberme { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SignInManager.PasswordSignInAsync(username, password, rememberme, false);
+        Nav.NavigateTo("/");
+    }
+}
