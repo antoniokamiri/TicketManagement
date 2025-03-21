@@ -1,11 +1,15 @@
 using Domain.Entities;
 using Domain.Interfaces;
+using Domain.IRepository;
 using Infrastructure.Data;
+using Infrastructure.Extensions;
+using Infrastructure.Repository;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 using TicketManagementUI.Components;
+using TicketManagementUI.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,8 +24,10 @@ builder.Services.AddAuthentication().AddCookie(IdentityConstants.ApplicationSche
 
 // Register Identity services
 builder.Services.AddIdentityCore<User>()
+    .AddRoles<ApplicationRole>()
     .AddEntityFrameworkStores<AppDBContext>()
-    .AddSignInManager();
+    .AddSignInManager()
+    .AddDefaultTokenProviders();
 
 builder.Services.ConfigureApplicationCookie(opt =>
 {
@@ -37,6 +43,12 @@ builder.Services.AddDbContext<AppDBContext>(opt =>
 
 // Register Services
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<ICriteriaService, CriteriaService>();
+builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddScoped<SeedData>();
+builder.Services.AddScoped(typeof(EncryptionHelper<>));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 
 builder.Services.AddMudServices();
 
@@ -57,5 +69,7 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+await app.InitializeDatabaseAsync().ConfigureAwait(false);
 
 app.Run();

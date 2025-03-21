@@ -12,8 +12,10 @@
 @inject IAccountService AccountService
 @inject IJSRuntime JSRuntime
 @inject SignInManager<User> SignInManager
+@inject EncryptionHelper<LoginDto> Encrpt
 
-@* @rendermode InteractiveServer *@
+
+@rendermode InteractiveServer
 
 <section class="vh-50">
     <div class="container-fluid h-custom">
@@ -25,7 +27,8 @@
                 <div class="d-flex flex-row align-items-center justify-content-center justify-content-lg-start">
                     <p class="lead fw-normal mb-0 me-3">Sign in with Email</p>
                 </div>
-                <StatusMessage Message="@errorMessage" Error="true" />
+                @* <StatusMessage Message="@errorMessage" Error="true" /> *@
+                <Alert @ref="alert"/>
                 <EditForm Model="Input" method="post" OnvalidSubmit="OnLogin" FormName="Login">
                     <DataAnnotationsValidator />
                     <hr />
@@ -57,7 +60,7 @@
     private InputModel Input { get; set; } = new();
     private string? errorMessage;
 
-    // private Alert alert;
+    private Alert alert;
 
     // protected override async Task OnInitializedAsync()
     // {
@@ -74,16 +77,25 @@
         var verify = await AccountService.VerifyUserAsync(Input.Email, Input.Password);
         if(!verify.Succeeded)
         {
-            ///Alert
-            // alert.ShowFailedAlert(verify.ErrorMessage);
-            errorMessage = "Error: User does not exist.";
+            //Alert
+            alert.ShowFailedAlert(verify.ErrorMessage);
+            // errorMessage = "Error: User does not exist.";
             return;
         }
 
-        await SignInManager.PasswordSignInAsync(verify.Data!, Input.Password, Input.Remember, true);
-        Nav.NavigateTo("/");
+        var loginData = new LoginDto
+            {
+                Email = verify.Data!,
+                Password = Input.Password,
+                Remember = Input.Remember
+            };
 
-        //Nav.NavigateTo($"/processor/{verify.Data}/{Input.Password}/{Input.Remember}");
+        var payload = Encrpt.Encode(loginData);
+
+        // await SignInManager.PasswordSignInAsync(verify.Data!, Input.Password, Input.Remember, true);
+        // Nav.NavigateTo("/");
+
+        Nav.NavigateTo($"/processor/{payload}");
     }
 
     private sealed class InputModel

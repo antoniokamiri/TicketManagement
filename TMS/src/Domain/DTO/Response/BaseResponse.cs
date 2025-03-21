@@ -1,4 +1,6 @@
-﻿namespace Domain.DTO.Response;
+﻿using Domain.Entities;
+
+namespace Domain.DTO.Response;
 
 public class BaseResponse
 {

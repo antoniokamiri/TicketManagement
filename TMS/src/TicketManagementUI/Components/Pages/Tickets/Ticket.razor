@@ -1,0 +1,80 @@
+﻿@page "/ticket"
+
+<SectionContent SectionName="page-title">Tickets</SectionContent>
+
+@inject ITicketService TicketService
+<MudPopoverProvider />
+
+@rendermode InteractiveServer
+
+<style>
+    .filter-panel{
+        padding: 0 20px;
+        position: relative;
+        background-color: var(--light-green);
+        width: 100%;
+    }
+
+    .mud-input{
+        background-color: white !important;
+    }
+
+    .mud-elevation-1{
+        box-shadow: none !important;
+    }
+
+    .mud-table-row {
+        cursor: pointer !important;
+    }
+</style>
+
+<div class="filter-panel">
+    Filter Here
+</div>
+
+<MudDataGrid @ref="dataGrid" T="GetTicketsResponse" SortMode="SortMode.None" ServerData="ServerReload" Filterable="false">
+    <Columns>
+        <PropertyColumn Property="x => x.TicketIdView" Title="Ticket Id" />
+        <PropertyColumn Property="x => x.Summary" />
+        <PropertyColumn Property="x => x.Product_Name" />
+        <PropertyColumn Property="x => x.Category_Name" />
+        <PropertyColumn Property="x => x.Priority_Name" />
+        <PropertyColumn Property="x => x.Raised_By_Name" Title="Raised By" />
+        <PropertyColumn Property="x => x.Expected_Date" Title="Expected Date" Format="dd MMM yyyy" />
+        <PropertyColumn Property="x => x.Raised_Date" Title="Created Date" Format="dd MMM yyyy" />
+
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="GetTicketsResponse" />
+    </PagerContent>
+</MudDataGrid>
+
+@code {
+    MudDataGrid<GetTicketsResponse> dataGrid;
+    string searchString = null;
+
+    /// <summary>
+    /// Here we simulate getting the paged, filtered and ordered data from the server
+    /// </summary>
+    private async Task<GridData<GetTicketsResponse>> ServerReload(GridState<GetTicketsResponse> state)
+    {
+        IEnumerable<GetTicketsResponse> getTickets = TicketService.GetTickets(new GetTicketsRequest());
+
+        await Task.Delay(300);
+
+        var totalItems = getTickets.Count();
+
+        var pagedData = getTickets.Skip(state.Page * state.PageSize).Take(state.PageSize).ToArray();
+        return new GridData<GetTicketsResponse>
+            {
+                TotalItems = totalItems,
+                Items = pagedData
+            };
+    }
+
+    private Task OnSearch(string text)
+    {
+        searchString = text;
+        return dataGrid.ReloadServerData();
+    }
+}

@@ -23,6 +23,7 @@ public class AppDBContext(DbContextOptions<AppDBContext> options) : IdentityDbCo
     {
 
         base.OnModelCreating(builder);
+
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         builder.ApplyGlobalFilters<ISoftDelete>(s => s.Deleted == null);
     }

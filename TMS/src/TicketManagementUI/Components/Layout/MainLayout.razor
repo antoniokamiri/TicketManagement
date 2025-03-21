@@ -1,10 +1,10 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
 
+
 @inherits LayoutComponentBase
 
 @* Required *@
 <MudThemeProvider />
-<MudPopoverProvider />
 
 @* Needed for dialogs *@
 <MudDialogProvider />
@@ -17,14 +17,16 @@
     </div>
 
     <main>
-        <div class="top-row px-4">
+        <div class="top-row d-flex justify-content-between" style="padding:35px">
+            <div style="font-size:25px">
+                <SectionOutlet SectionName="page-title"></SectionOutlet>
+            </div>
             <AuthorizeView>
-                <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
                 <a href="/logout" >Logout</a>
             </AuthorizeView>
         </div>
 
-        <article class="content px-4">
+        <article class="content">
             @Body
         </article>
     </main>

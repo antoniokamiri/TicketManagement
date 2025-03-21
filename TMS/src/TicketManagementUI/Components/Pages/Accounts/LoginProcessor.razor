@@ -1,4 +1,4 @@
-﻿@page "/processor/{username}/{password}/{rememberme:bool}"
+﻿@page "/processor/{payload}"
 
 @using Domain.Entities
 @using Microsoft.AspNetCore.Identity
@@ -7,16 +7,17 @@
 
 @inject SignInManager<User> SignInManager
 @inject NavigationManager Nav
+@inject EncryptionHelper<LoginDto> Encrpt
+
 Sign In...
 
 @code {
-    [Parameter] public string username { get; set; }
-    [Parameter] public string password { get; set; }
-    [Parameter] public bool rememberme { get; set; }
+    [Parameter] public string payload { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        await SignInManager.PasswordSignInAsync(username, password, rememberme, false);
+        var loginDto = Encrpt.Decode(payload);
+        await SignInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, loginDto.Remember, true);
         Nav.NavigateTo("/");
     }
 }

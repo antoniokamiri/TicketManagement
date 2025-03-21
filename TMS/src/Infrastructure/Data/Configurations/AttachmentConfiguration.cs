@@ -10,9 +10,6 @@ public class AttachmentConfiguration : IEntityTypeConfiguration<Attachment>
         builder.Property(t => t.File_Name).HasMaxLength(80).IsRequired();
         builder.HasIndex(p => p.File_Name).IsUnique();
         builder.Property(t => t.Server_File_Name).HasMaxLength(150);
-
-        builder.Navigation(e => e.Ticket).AutoInclude();
-        builder.Navigation(e => e.Discussion).AutoInclude();
     }
 }
 
@@ -55,8 +52,6 @@ public class DiscussionConfiguration : IEntityTypeConfiguration<Discussion>
         builder.HasOne(t => t.User).WithMany().HasForeignKey(x => x.User_Id).OnDelete(DeleteBehavior.NoAction);
         builder.HasMany(t => t.Attachments).WithOne(p => p.Discussion).HasForeignKey(x => x.Discussion_Id).OnDelete(DeleteBehavior.NoAction);
 
-        builder.Navigation(e => e.Ticket).AutoInclude();
-        builder.Navigation(e => e.User).AutoInclude();
     }
 }
 
@@ -76,10 +71,5 @@ public class TicketConfiguration : IEntityTypeConfiguration<Ticket>
         builder.HasOne(t => t.Priority).WithMany().HasForeignKey(x => x.Priority_Id).OnDelete(DeleteBehavior.NoAction);
         builder.HasMany(t => t.Attachments).WithOne(p => p.Ticket).HasForeignKey(x => x.Ticket_Id).OnDelete(DeleteBehavior.NoAction);
 
-        builder.Navigation(e => e.Assigned_To).AutoInclude();
-        builder.Navigation(e => e.Raised_By).AutoInclude();
-        builder.Navigation(e => e.Product).AutoInclude();
-        builder.Navigation(e => e.Category).AutoInclude();
-        builder.Navigation(e => e.Attachments).AutoInclude();
     }
 }
